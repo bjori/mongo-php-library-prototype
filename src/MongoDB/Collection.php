@@ -296,9 +296,15 @@ class Collection {
             "pipeline"  => $pipeline,
         ) + $options;
 
-        $doc = $this->_runCommand($this->dbname, $cmd)->getResponseDocument();
+        $result = $this->_runCommand($this->dbname, $cmd);
+        $doc = $result->getResponseDocument();
         if ($doc["ok"]) {
-            return $doc["result"];
+            if (isset($cmd["cursor"]) && $cmd["cursor"]) {
+                var_dump($result->getIterator());
+                return $result->getIterator();
+            } else {
+                return $doc["result"];
+            }
         }
         throw $this->_generateCommandException($doc);
     } /* }}} */
@@ -358,7 +364,7 @@ class Collection {
             return new Exception($doc["errmsg"]);
         }
         var_dump($doc);
-        return new Exception("FIXME: Unknown error");
+        return new \Exception("FIXME: Unknown error");
     } /* }}} */
     protected function _runCommand($dbname, array $cmd, ReadPreference $rp = null) { /* {{{ */
         //var_dump(\BSON\toJSON(\BSON\fromArray($cmd)));
